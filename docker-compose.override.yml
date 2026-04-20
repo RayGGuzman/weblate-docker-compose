@@ -1,4 +1,19 @@
 services:
+  valkey:
+    image: valkey/valkey:latest
+    restart: unless-stopped
+    ports:
+      - 6379
+    volumes:
+      - ../files/valkey.conf:/etc/valkey/valkey.conf
+      - valkey-data:/data
+    command: valkey-server /etc/valkey/valkey.conf
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a \"$$VALKEY_PASSWORD\" ping | grep PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
   weblate:
     image: weblate/weblate:latest
     environment:
@@ -22,5 +37,5 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
       
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
+      REDIS_HOST: valkey
+      REDIS_PORT: 6379
